@@ -26,11 +26,4 @@ jobs:
 
       - name: Build and run
         run: |
-          ssh -o StrictHostKeyChecking=no -i id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} <<'EOS'
-            cd ~/app
-            docker build -t project-mvp:latest .
-            docker stop project-mvp || true
-            docker rm project-mvp || true
-            docker run -d --name project-mvp --restart unless-stopped -p 80:80 project-mvp:latest
-            docker ps --filter name=project-mvp
-EOS
+          ssh -o StrictHostKeyChecking=no -i id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "cd ~/app && docker build -t project-mvp:latest . && docker stop project-mvp || true && docker rm project-mvp || true && docker run -d --name project-mvp --restart unless-stopped -p 80:80 project-mvp:latest && docker ps --filter name=project-mvp"
