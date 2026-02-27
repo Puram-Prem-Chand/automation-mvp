@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Color Picker</title>
+  <style>
+    :root{
+      --bg:#0b0f17;
+      --panel:#121a27;
+      --panel2:#0f1623;
+      --text:#e8eefc;
+      --muted:#93a4c7;
+      --border:rgba(255,255,255,0.08);
+      --shadow: 0 18px 45px rgba(0,0,0,0.45);
+      --radius:16px;
+      --pad:18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:radial-gradient(1200px 700px at 20% 10%, #16223a 0%, var(--bg) 55%),
+                 radial-gradient(900px 600px at 85% 80%, #1b2a4b 0%, var(--bg) 55%);
+      color:var(--text);
+      font-family:var(--sans);
+    }
+    .wrap{
+      width:min(920px, 94vw);
+      display:grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap:18px;
+    }
+    .card{
+      background:linear-gradient(180deg, var(--panel) 0%, var(--panel2) 100%);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .head{
+      padding:18px 18px 12px 18px;
+      border-bottom:1px solid var(--border);
+    }
+    .title{
+      font-size:18px;
+      font-weight:700;
+      letter-spacing:0.2px;
+    }
+    .sub{
+      color:var(--muted);
+      margin-top:6px;
+      font-size:13px;
+      line-height:1.4;
+    }
+    .body{
+      padding:var(--pad);
+    }
+    .row{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+    .label{
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+    .field{
+      flex:1;
+      min-width:220px;
+    }
+    input[type="color"]{
+      width:62px;
+      height:44px;
+      border:none;
+      background:transparent;
+      padding:0;
+      cursor:pointer;
+    }
+    input[type="text"]{
+      width:100%;
+      box-sizing:border-box;
+      padding:12px 12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.04);
+      color:var(--text);
+      outline:none;
+      font-family:var(--mono);
+      font-size:13px;
+    }
+    input[type="text"]::placeholder{ color: rgba(232,238,252,0.35); }
+    .btn{
+      padding:12px 14px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.06);
+      color:var(--text);
+      cursor:pointer;
+      font-size:13px;
+      font-weight:600;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .preview{
+      height:220px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:#0f1623;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      padding:14px;
+      box-sizing:border-box;
+      position:relative;
+      overflow:hidden;
+    }
+    .chip{
+      font-family:var(--mono);
+      font-size:12px;
+      background:rgba(0,0,0,0.35);
+      border:1px solid rgba(255,255,255,0.10);
+      padding:8px 10px;
+      border-radius:12px;
+      backdrop-filter: blur(6px);
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+      margin-top:14px;
+    }
+    .metric{
+      padding:12px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.03);
+    }
+    .metric .k{ color:var(--muted); font-size:12px; }
+    .metric .v{ font-family:var(--mono); font-size:13px; margin-top:6px; }
+    .swatches{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:12px;
+    }
+    .sw{
+      width:34px;
+      height:34px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      cursor:pointer;
+      position:relative;
+      overflow:hidden;
+    }
+    .sw:after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.02) 100%);
+      opacity:0.35;
+    }
+    .hint{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.4;
+    }
+    @media (max-width: 840px){
+      .wrap{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="head">
+        <div class="title">Dark Color Picker</div>
+        <div class="sub">Pick a color, copy HEX/RGB, and save swatches locally in your browser.</div>
+      </div>
+      <div class="body">
+        <div class="row">
+          <div>
+            <div class="label">Color</div>
+            <input id="picker" type="color" value="#3b82f6" />
+          </div>
+          <div class="field">
+            <div class="label">HEX</div>
+            <input id="hex" type="text" value="#3b82f6" placeholder="#RRGGBB" />
+          </div>
+          <button id="copyHex" class="btn">Copy HEX</button>
+          <button id="save" class="btn">Save Swatch</button>
+        </div>
+
+        <div id="preview" class="preview">
+          <div id="chipHex" class="chip">#3b82f6</div>
+          <div id="chipRgb" class="chip">rgb(59, 130, 246)</div>
+        </div>
+
+        <div class="grid">
+          <div class="metric">
+            <div class="k">RGB</div>
+            <div id="rgb" class="v">rgb(59, 130, 246)</div>
+          </div>
+          <div class="metric">
+            <div class="k">HSL</div>
+            <div id="hsl" class="v">hsl(217, 91%, 60%)</div>
+          </div>
+        </div>
+
+        <div class="label" style="margin-top:14px;">Saved Swatches</div>
+        <div id="swatches" class="swatches"></div>
+        <div class="hint">Tip: Click a swatch to apply it. Swatches persist via localStorage.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="head">
+        <div class="title">Preview Panel</div>
+        <div class="sub">This area reflects the selected color as a UI accent.</div>
+      </div>
+      <div class="body">
+        <div id="panel" class="metric" style="padding:16px;">
+          <div class="k">Example UI</div>
+          <div style="margin-top:10px; display:grid; gap:10px;">
+            <div style="display:flex; gap:10px; align-items:center;">
+              <div id="dot" style="width:10px;height:10px;border-radius:50%;background:#3b82f6;"></div>
+              <div style="font-weight:700;">Accent color</div>
+            </div>
+            <div style="color:var(--muted); font-size:13px; line-height:1.5;">
+              Use this to show your deployment works by changing the UI color and pushing to GitHub.
+            </div>
+            <button id="copyRgb" class="btn" style="width:160px;">Copy RGB</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const picker = document.getElementById("picker");
+  const hexIn = document.getElementById("hex");
+  const preview = document.getElementById("preview");
+  const chipHex = document.getElementById("chipHex");
+  const chipRgb = document.getElementById("chipRgb");
+  const rgbOut = document.getElementById("rgb");
+  const hslOut = document.getElementById("hsl");
+  const swatchesEl = document.getElementById("swatches");
+  const dot = document.getElementById("dot");
+  const copyHexBtn = document.getElementById("copyHex");
+  const copyRgbBtn = document.getElementById("copyRgb");
+  const saveBtn = document.getElementById("save");
+
+  const KEY = "color_picker_swatches_v1";
+
+  function clamp(v, a, b){ return Math.min(b, Math.max(a, v)); }
+
+  function normalizeHex(v){
+    if(!v) return null;
+    let x = v.trim();
+    if(x[0] !== "#") x = "#" + x;
+    if(!/^#[0-9a-fA-F]{6}$/.test(x)) return null;
+    return x.toLowerCase();
+  }
+
+  function hexToRgb(hex){
+    const h = hex.replace("#", "");
+    const r = parseInt(h.slice(0,2), 16);
+    const g = parseInt(h.slice(2,4), 16);
+    const b = parseInt(h.slice(4,6), 16);
+    return {r,g,b};
+  }
+
+  function rgbToHsl(r,g,b){
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r,g,b), min = Math.min(r,g,b);
+    let h, s, l = (max + min) / 2;
+    const d = max - min;
+
+    if(d === 0){
+      h = 0; s = 0;
+    } else {
+      s = d / (1 - Math.abs(2*l - 1));
+      switch(max){
+        case r: h = ((g - b) / d) % 6; break;
+        case g: h = (b - r) / d + 2; break;
+        default: h = (r - g) / d + 4; break;
+      }
+      h = Math.round(h * 60);
+      if(h < 0) h += 360;
+    }
+    return {h, s: Math.round(s*100), l: Math.round(l*100)};
+  }
+
+  function render(hex){
+    const {r,g,b} = hexToRgb(hex);
+    const {h,s,l} = rgbToHsl(r,g,b);
+
+    picker.value = hex;
+    hexIn.value = hex;
+
+    preview.style.background = hex;
+    chipHex.textContent = hex;
+    chipRgb.textContent = `rgb(${r}, ${g}, ${b})`;
+    rgbOut.textContent = `rgb(${r}, ${g}, ${b})`;
+    hslOut.textContent = `hsl(${h}, ${s}%, ${l}%)`;
+    dot.style.background = hex;
+  }
+
+  function loadSwatches(){
+    try{
+      const raw = localStorage.getItem(KEY);
+      const arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    }catch{
+      return [];
+    }
+  }
+
+  function saveSwatches(arr){
+    localStorage.setItem(KEY, JSON.stringify(arr.slice(0, 24)));
+  }
+
+  function drawSwatches(){
+    const arr = loadSwatches();
+    swatchesEl.innerHTML = "";
+    arr.forEach((hex) => {
+      const d = document.createElement("div");
+      d.className = "sw";
+      d.style.background = hex;
+      d.title = hex;
+      d.onclick = () => render(hex);
+      swatchesEl.appendChild(d);
+    });
+  }
+
+  async function copyText(t){
+    try{
+      await navigator.clipboard.writeText(t);
+      return true;
+    }catch{
+      return false;
+    }
+  }
+
+  picker.addEventListener("input", () => {
+    render(picker.value.toLowerCase());
+    drawSwatches();
+  });
+
+  hexIn.addEventListener("input", () => {
+    const n = normalizeHex(hexIn.value);
+    if(n) render(n);
+  });
+
+  copyHexBtn.addEventListener("click", async () => {
+    const ok = await copyText(hexIn.value);
+    copyHexBtn.textContent = ok ? "Copied" : "Copy HEX";
+    setTimeout(() => copyHexBtn.textContent = "Copy HEX", 900);
+  });
+
+  copyRgbBtn.addEventListener("click", async () => {
+    const ok = await copyText(rgbOut.textContent);
+    copyRgbBtn.textContent = ok ? "Copied" : "Copy RGB";
+    setTimeout(() => copyRgbBtn.textContent = "Copy RGB", 900);
+  });
+
+  saveBtn.addEventListener("click", () => {
+    const n = normalizeHex(hexIn.value);
+    if(!n) return;
+    const arr = loadSwatches().filter(x => x !== n);
+    arr.unshift(n);
+    saveSwatches(arr);
+    drawSwatches();
+  });
+
+  render("#3b82f6");
+  drawSwatches();
+</script>
+</body>
+</html>

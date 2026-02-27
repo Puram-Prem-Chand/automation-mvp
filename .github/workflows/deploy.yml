@@ -9,29 +9,28 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - name: Prepare SSH key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > id_rsa
+          chmod 600 id_rsa
+
+      - name: Prepare remote directory
+        run: |
+          ssh -o StrictHostKeyChecking=no -i id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "rm -rf ~/app && mkdir -p ~/app"
 
       - name: Copy app to server
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          source: "app/"
-          target: "~/app/"
+        run: |
+          scp -o StrictHostKeyChecking=no -i id_rsa -r app/* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/app/
 
-      - name: Build and run Docker on server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          script: |
+      - name: Build and run
+        run: |
+          ssh -o StrictHostKeyChecking=no -i id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} <<'EOS'
             cd ~/app
             docker build -t project-mvp:latest .
             docker stop project-mvp || true
             docker rm project-mvp || true
-            docker run -d --name project-mvp -p 80:80 project-mvp:latest
+            docker run -d --name project-mvp --restart unless-stopped -p 80:80 project-mvp:latest
+            docker ps --filter name=project-mvp
+EOS
