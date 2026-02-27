@@ -10,3 +10,11 @@ crash.log
 
 # General
 *.log
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+infra/.terraform.lock.hcl
+.terraform.lock.hcl
+.terraform/
+crash.log
