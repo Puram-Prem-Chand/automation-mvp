@@ -1,4 +1,5 @@
 Hi guys! This is my Color Picker APP project which i wanted to share with you 🐤
+Current working app is on (http://3.10.233.51/)
 
 # automation-mvp
 
@@ -131,3 +132,4 @@ terraform destroy
 
 - Ensure AWS Console region is **eu-west-2 (London)** to see the EC2 instance.
 - Do **not** commit AWS credentials or private keys to the repository.
+
